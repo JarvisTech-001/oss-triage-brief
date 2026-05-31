@@ -31,6 +31,7 @@
   },
   "homepage": "https://github.com/JarvisTech-001/oss-triage-brief#readme",
   "files": [
+    "CHANGELOG.md",
     "examples",
     "src",
     "README.md",
