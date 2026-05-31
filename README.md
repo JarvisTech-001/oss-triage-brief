@@ -89,6 +89,13 @@ More examples:
 
 - [Issue triage brief](examples/issue-triage.md)
 - [Pull request review brief](examples/pr-review.md)
+- [GitHub Action workflow](examples/github-action.yml)
+
+### GitHub Action example
+
+Copy [examples/github-action.yml](examples/github-action.yml) into a repository
+as `.github/workflows/maintainer-brief.yml` to create a manual workflow that
+turns an issue or pull request number into a Markdown maintainer brief.
 
 Generate an issue triage brief:
 

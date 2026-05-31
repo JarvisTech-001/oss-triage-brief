@@ -1,0 +1,63 @@
+name: Maintainer Brief
+
+on:
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: Issue or pull request.
+        required: true
+        type: choice
+        options:
+          - issue
+          - pr
+      number:
+        description: GitHub issue or pull request number.
+        required: true
+      risk:
+        description: Optional PR review focus.
+        required: false
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install -g oss-triage-brief
+
+      - name: Build issue brief
+        if: ${{ inputs.kind == 'issue' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ inputs.number }}
+        run: |
+          gh issue view "$ISSUE_NUMBER" --json url,title,body,labels \
+            | oss-triage-brief issue --from-json > maintainer-brief.md
+
+      - name: Build PR brief
+        if: ${{ inputs.kind == 'pr' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.number }}
+          REVIEW_RISK: ${{ inputs.risk }}
+        run: |
+          gh pr view "$PR_NUMBER" --json url,title,body,baseRefName,headRefName,files > pr.json
+          gh pr diff "$PR_NUMBER" > pr.diff
+          oss-triage-brief pr --from-json --risk "${REVIEW_RISK:-general}" --diff-file pr.diff \
+            < pr.json > maintainer-brief.md
+
+      - name: Add brief to job summary
+        run: cat maintainer-brief.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: maintainer-brief
+          path: maintainer-brief.md

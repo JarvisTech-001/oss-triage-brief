@@ -84,6 +84,13 @@ gh pr view 22 --repo owner/project --json url,title,body,baseRefName,headRefName
 
 - [Issue triage brief](examples/issue-triage.md)
 - [Pull request review brief](examples/pr-review.md)
+- [GitHub Action workflow](examples/github-action.yml)
+
+### GitHub Action 示例
+
+把 [examples/github-action.yml](examples/github-action.yml) 复制到仓库的
+`.github/workflows/maintainer-brief.yml`，就可以创建一个手动触发的 workflow，
+根据 issue 或 PR 编号生成 Markdown 维护 brief。
 
 生成 issue triage brief：
 
