@@ -50,6 +50,41 @@ npm install
 
 ## 使用
 
+### 30 秒 demo
+
+从 GitHub CLI JSON 生成 issue triage brief：
+
+```sh
+gh issue view 19 --repo owner/project --json url,title,body,labels \
+  | oss-triage-brief issue --from-json
+```
+
+输出：
+
+```md
+# OSS Maintainer Brief
+
+Repository: owner/project
+Issue: #19
+Title: CLI should read GitHub issue JSON
+Labels: enhancement, roadmap
+
+## Maintainer Task
+Triage this issue and propose the smallest safe next step.
+```
+
+PR review brief 也可以使用同样的方式生成：
+
+```sh
+gh pr view 22 --repo owner/project --json url,title,body,baseRefName,headRefName,files \
+  | oss-triage-brief pr --from-json
+```
+
+更多示例：
+
+- [Issue triage brief](examples/issue-triage.md)
+- [Pull request review brief](examples/pr-review.md)
+
 生成 issue triage brief：
 
 ```sh
@@ -76,7 +111,7 @@ node ./src/cli.js pr \
   --changed-file test/brief.test.js
 ```
 
-输出示例：
+手动 PR 输出示例：
 
 ```md
 # OSS Maintainer Brief

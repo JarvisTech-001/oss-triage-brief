@@ -55,6 +55,41 @@ npm install
 
 ## Usage
 
+### 30-second demo
+
+Generate an issue triage brief from GitHub CLI JSON:
+
+```sh
+gh issue view 19 --repo owner/project --json url,title,body,labels \
+  | oss-triage-brief issue --from-json
+```
+
+Output:
+
+```md
+# OSS Maintainer Brief
+
+Repository: owner/project
+Issue: #19
+Title: CLI should read GitHub issue JSON
+Labels: enhancement, roadmap
+
+## Maintainer Task
+Triage this issue and propose the smallest safe next step.
+```
+
+Generate a PR review brief the same way:
+
+```sh
+gh pr view 22 --repo owner/project --json url,title,body,baseRefName,headRefName,files \
+  | oss-triage-brief pr --from-json
+```
+
+More examples:
+
+- [Issue triage brief](examples/issue-triage.md)
+- [Pull request review brief](examples/pr-review.md)
+
 Generate an issue triage brief:
 
 ```sh
@@ -81,7 +116,7 @@ node ./src/cli.js pr \
   --changed-file test/brief.test.js
 ```
 
-Example output:
+Manual PR output example:
 
 ```md
 # OSS Maintainer Brief
