@@ -1,0 +1,17 @@
+{
+  "name": "codex-oss",
+  "version": "0.1.0",
+  "description": "Create focused Codex maintenance briefs for open source issue triage.",
+  "type": "module",
+  "bin": {
+    "codex-oss": "./src/cli.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "lint": "node --check src/*.js test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
