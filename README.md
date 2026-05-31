@@ -1,5 +1,7 @@
 # oss-triage-brief
 
+[![CI](https://github.com/JarvisTech-001/oss-triage-brief/actions/workflows/ci.yml/badge.svg)](https://github.com/JarvisTech-001/oss-triage-brief/actions/workflows/ci.yml)
+
 `oss-triage-brief` is a small local CLI for open source maintainers. It turns
 issue reports and pull request summaries into focused Markdown briefs that can
 be pasted into an AI coding assistant or a maintainer review note.
@@ -15,6 +17,14 @@ repeatable, and easy to inspect.
 
 The scope is intentionally narrow. There is no hosted service, account system,
 database, telemetry, or runtime dependency.
+
+## Project Status
+
+- Current release: [v0.1.0](https://github.com/JarvisTech-001/oss-triage-brief/releases/tag/v0.1.0).
+- CI runs `npm run check` on pushes and pull requests.
+- The package is prepared for npm publishing, but has not been published yet.
+  The next step is npm account authentication and `npm publish --access public`.
+- Open roadmap issues track the next maintainer workflow improvements.
 
 ## Why This Matters for OSS Maintainers
 
@@ -93,6 +103,14 @@ Changed files:
 3. Paste the brief into your review workflow.
 4. Use the result to close, ask for more information, request changes, or plan
    the smallest implementation.
+
+## Roadmap
+
+- [GitHub issue JSON input](https://github.com/JarvisTech-001/oss-triage-brief/issues/5)
+- [PR diff summary briefs](https://github.com/JarvisTech-001/oss-triage-brief/issues/1)
+- [npm package publishing](https://github.com/JarvisTech-001/oss-triage-brief/issues/2)
+- [GitHub Action integration](https://github.com/JarvisTech-001/oss-triage-brief/issues/3)
+- [Release checklist briefs](https://github.com/JarvisTech-001/oss-triage-brief/issues/4)
 
 ## Development
 
