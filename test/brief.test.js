@@ -63,6 +63,35 @@ describe("buildPullRequestBrief", () => {
     assert.match(brief, /Changed files:\n- src\/cli\.js\n- test\/brief\.test\.js/);
     assert.match(brief, /Review this pull request for maintainer acceptance\./);
   });
+
+  it("includes risk focus and diff summary when provided", () => {
+    const brief = buildPullRequestBrief({
+      repo: "example/project",
+      number: 23,
+      title: "Harden JSON parsing",
+      body: "Adds stricter parser errors.",
+      base: "main",
+      head: "json-errors",
+      risk: "security",
+      diff: [
+        "diff --git a/src/cli.js b/src/cli.js",
+        "index 1111111..2222222 100644",
+        "--- a/src/cli.js",
+        "+++ b/src/cli.js",
+        "@@ -1,2 +1,3 @@",
+        "-old parser",
+        "+new parser",
+        "+clear error",
+      ].join("\n"),
+    });
+
+    assert.match(brief, /Review focus: security/);
+    assert.match(brief, /## Diff Summary/);
+    assert.match(brief, /- Files touched: 1/);
+    assert.match(brief, /- Additions: 2/);
+    assert.match(brief, /- Deletions: 1/);
+    assert.match(brief, /- src\/cli\.js/);
+  });
 });
 
 describe("buildReleaseBrief", () => {
@@ -207,6 +236,40 @@ describe("runCli", () => {
     assert.match(writes.join(""), /Release: 0\.2\.0/);
     assert.match(writes.join(""), /Add JSON input and release briefs\./);
     assert.match(writes.join(""), /- npm run check/);
+  });
+
+  it("prints a focused PR risk brief with diff input", () => {
+    const writes = [];
+    const code = runCli(
+      [
+        "pr",
+        "--repo",
+        "example/project",
+        "--number",
+        "24",
+        "--title",
+        "Harden parser",
+        "--body",
+        "Adds stricter parser errors.",
+        "--base",
+        "main",
+        "--head",
+        "parser-hardening",
+        "--risk",
+        "security",
+        "--diff",
+        "diff --git a/src/cli.js b/src/cli.js\n--- a/src/cli.js\n+++ b/src/cli.js\n@@ -1 +1,2 @@\n-old\n+new\n+safe",
+      ],
+      {
+        stdout: { write: (value) => writes.push(value) },
+        stderr: { write: () => {} },
+      }
+    );
+
+    assert.equal(code, 0);
+    assert.match(writes.join(""), /Review focus: security/);
+    assert.match(writes.join(""), /Changed files:\n- src\/cli\.js/);
+    assert.match(writes.join(""), /- Additions: 2/);
   });
 
   it("returns a non-zero code when required flags are missing", () => {

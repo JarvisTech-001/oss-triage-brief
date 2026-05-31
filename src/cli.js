@@ -48,7 +48,27 @@ function parseFlags(args) {
     }
 
     const name = flag.slice(2).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-    if (!["repo", "number", "title", "body", "bodyFile", "label", "base", "head", "changedFile", "fromJson", "version", "changes", "changesFile", "check"].includes(name)) {
+    if (
+      ![
+        "repo",
+        "number",
+        "title",
+        "body",
+        "bodyFile",
+        "label",
+        "base",
+        "head",
+        "changedFile",
+        "fromJson",
+        "version",
+        "changes",
+        "changesFile",
+        "check",
+        "diff",
+        "diffFile",
+        "risk",
+      ].includes(name)
+    ) {
       throw new Error(`unknown flag ${flag}`);
     }
 
@@ -93,6 +113,8 @@ function buildBrief(command, flags, jsonInput, body, repo, title) {
       base: flags.fromJson ? requireCliString(jsonInput.baseRefName, "baseRefName") : requireCliString(flags.base, "--base"),
       head: flags.fromJson ? requireCliString(jsonInput.headRefName, "headRefName") : requireCliString(flags.head, "--head"),
       changedFiles: flags.fromJson ? changedFilesFromGitHubJson(jsonInput.files) : flags.changedFile,
+      diff: readOptionalText(flags.diff, flags.diffFile),
+      risk: flags.risk,
     });
   }
 
@@ -120,6 +142,14 @@ function readJsonFromStdin(streams) {
   } catch (error) {
     throw new Error(`--from-json must receive valid JSON; ${error.message}`);
   }
+}
+
+function readOptionalText(inlineValue, filePath) {
+  if (filePath !== undefined) {
+    return readFileSync(filePath, "utf8");
+  }
+
+  return inlineValue;
 }
 
 function repoFromGitHubJson(jsonInput, flags) {
@@ -205,6 +235,7 @@ function usage() {
     "  gh issue view 123 --json url,title,body,labels | oss-triage-brief issue --from-json",
     "  oss-triage-brief pr --repo owner/name --title \"PR title\" --base main --head feature [--number 123] [--body text] [--changed-file path]",
     "  gh pr view 123 --json url,title,body,baseRefName,headRefName,files | oss-triage-brief pr --from-json",
+    "  oss-triage-brief pr --repo owner/name --title \"PR title\" --base main --head feature --risk security --diff-file pr.diff",
     "  oss-triage-brief release --repo owner/name --version 0.2.0 --changes \"Release notes\" [--check \"npm run check\"]",
     "",
   ].join("\n");

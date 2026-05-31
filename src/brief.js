@@ -38,7 +38,9 @@ export function buildPullRequestBrief(input) {
   const body = normalizeIssueBody(input.body);
   const base = requireNonEmptyString(input.base, "base");
   const head = requireNonEmptyString(input.head, "head");
-  const changedFiles = normalizeChangedFiles(input.changedFiles);
+  const diffSummary = summarizeUnifiedDiff(input.diff);
+  const changedFiles = normalizeChangedFiles(input.changedFiles ?? diffSummary?.files);
+  const risk = normalizeOptionalString(input.risk, "risk");
 
   return [
     "# OSS Maintainer Brief",
@@ -48,8 +50,10 @@ export function buildPullRequestBrief(input) {
     `Title: ${title}`,
     `Base branch: ${base}`,
     `Head branch: ${head}`,
+    ...(risk === null ? [] : [`Review focus: ${risk}`]),
     "Changed files:",
     ...changedFiles.map((file) => `- ${file}`),
+    ...diffSummaryLines(diffSummary),
     "",
     "## Maintainer Task",
     "Review this pull request for maintainer acceptance.",
@@ -67,6 +71,36 @@ export function buildPullRequestBrief(input) {
     "- Main risks: list the concrete risks that affect merge safety.",
     "- Next action: smallest action needed before merge.",
   ].join("\n");
+}
+
+export function summarizeUnifiedDiff(diff) {
+  if (diff === undefined || diff === null || String(diff).trim() === "") {
+    return null;
+  }
+
+  const files = [];
+  let additions = 0;
+  let deletions = 0;
+
+  for (const line of String(diff).split("\n")) {
+    const fileMatch = line.match(/^diff --git a\/(.+) b\/(.+)$/);
+    if (fileMatch !== null) {
+      files.push(fileMatch[2]);
+      continue;
+    }
+
+    if (line.startsWith("+") && !line.startsWith("+++")) {
+      additions += 1;
+    } else if (line.startsWith("-") && !line.startsWith("---")) {
+      deletions += 1;
+    }
+  }
+
+  return {
+    additions,
+    deletions,
+    files: [...new Set(files)],
+  };
 }
 
 export function buildReleaseBrief(input) {
@@ -108,6 +142,14 @@ function requireNonEmptyString(value, name) {
   }
 
   return value.trim();
+}
+
+function normalizeOptionalString(value, name) {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  return requireNonEmptyString(value, name);
 }
 
 function normalizeIssueNumber(value) {
@@ -157,6 +199,22 @@ function normalizeChangedFiles(value) {
   }
 
   return value.map((file) => requireNonEmptyString(file, "changedFile"));
+}
+
+function diffSummaryLines(diffSummary) {
+  if (diffSummary === null) {
+    return [];
+  }
+
+  return [
+    "",
+    "## Diff Summary",
+    `- Files touched: ${diffSummary.files.length}`,
+    `- Additions: ${diffSummary.additions}`,
+    `- Deletions: ${diffSummary.deletions}`,
+    "- Files:",
+    ...normalizeChangedFiles(diffSummary.files).map((file) => `  - ${file}`),
+  ];
 }
 
 function normalizeChecks(value) {
