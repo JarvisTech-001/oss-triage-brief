@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 import { buildIssueBrief, buildPullRequestBrief, buildReleaseBrief } from "../src/brief.js";
 import { runCli } from "../src/cli.js";
+
+const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 
 describe("buildIssueBrief", () => {
   it("creates a focused issue triage brief", () => {
@@ -281,5 +284,11 @@ describe("runCli", () => {
 
     assert.equal(code, 1);
     assert.match(errors.join(""), /--title must be a non-empty string/);
+  });
+});
+
+describe("package metadata", () => {
+  it("keeps the published CLI entry executable", () => {
+    assert.equal(packageJson.bin["oss-triage-brief"], "src/cli.js");
   });
 });

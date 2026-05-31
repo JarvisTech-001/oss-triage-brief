@@ -4,7 +4,7 @@
   "description": "Create focused maintainer briefs for open source issue and pull request triage.",
   "type": "module",
   "bin": {
-    "oss-triage-brief": "./src/cli.js"
+    "oss-triage-brief": "src/cli.js"
   },
   "scripts": {
     "check": "npm test && npm run lint",
