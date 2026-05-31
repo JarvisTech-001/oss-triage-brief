@@ -7,11 +7,33 @@
     "codex-oss": "./src/cli.js"
   },
   "scripts": {
+    "check": "npm test && npm run lint",
     "test": "node --test",
     "lint": "node --check src/*.js test/*.test.js"
   },
+  "keywords": [
+    "codex",
+    "open-source",
+    "maintainers",
+    "issue-triage",
+    "cli"
+  ],
+  "author": "Frank",
   "engines": {
     "node": ">=20"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JarvisTech-001/codex-oss.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JarvisTech-001/codex-oss/issues"
+  },
+  "homepage": "https://github.com/JarvisTech-001/codex-oss#readme",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "license": "MIT"
 }
