@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { buildIssueBrief, buildPullRequestBrief } from "../src/brief.js";
+import { buildIssueBrief, buildPullRequestBrief, buildReleaseBrief } from "../src/brief.js";
 import { runCli } from "../src/cli.js";
 
 describe("buildIssueBrief", () => {
@@ -62,6 +62,23 @@ describe("buildPullRequestBrief", () => {
     assert.match(brief, /Head branch: release-checklist/);
     assert.match(brief, /Changed files:\n- src\/cli\.js\n- test\/brief\.test\.js/);
     assert.match(brief, /Review this pull request for maintainer acceptance\./);
+  });
+});
+
+describe("buildReleaseBrief", () => {
+  it("creates a focused release checklist brief", () => {
+    const brief = buildReleaseBrief({
+      repo: "example/project",
+      version: "0.2.0",
+      changes: "Add GitHub JSON input and release briefs.",
+      checks: ["npm run check", "npm pack --dry-run"],
+    });
+
+    assert.match(brief, /^# OSS Maintainer Brief/);
+    assert.match(brief, /Release: 0\.2\.0/);
+    assert.match(brief, /Planned Changes/);
+    assert.match(brief, /- npm run check\n- npm pack --dry-run/);
+    assert.match(brief, /Prepare this release for maintainer approval\./);
   });
 });
 
@@ -164,6 +181,32 @@ describe("runCli", () => {
     assert.match(writes.join(""), /Base branch: main/);
     assert.match(writes.join(""), /Head branch: json-input/);
     assert.match(writes.join(""), /Changed files:\n- src\/cli\.js\n- test\/brief\.test\.js/);
+  });
+
+  it("prints a release brief from command line flags", () => {
+    const writes = [];
+    const code = runCli(
+      [
+        "release",
+        "--repo",
+        "example/project",
+        "--version",
+        "0.2.0",
+        "--changes",
+        "Add JSON input and release briefs.",
+        "--check",
+        "npm run check",
+      ],
+      {
+        stdout: { write: (value) => writes.push(value) },
+        stderr: { write: () => {} },
+      }
+    );
+
+    assert.equal(code, 0);
+    assert.match(writes.join(""), /Release: 0\.2\.0/);
+    assert.match(writes.join(""), /Add JSON input and release briefs\./);
+    assert.match(writes.join(""), /- npm run check/);
   });
 
   it("returns a non-zero code when required flags are missing", () => {

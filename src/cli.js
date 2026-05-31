@@ -2,7 +2,7 @@
 
 import { readFileSync } from "node:fs";
 
-import { buildIssueBrief, buildPullRequestBrief } from "./brief.js";
+import { buildIssueBrief, buildPullRequestBrief, buildReleaseBrief } from "./brief.js";
 
 export function runCli(argv = process.argv.slice(2), streams = {}) {
   const stdout = streams.stdout ?? process.stdout;
@@ -16,7 +16,7 @@ export function runCli(argv = process.argv.slice(2), streams = {}) {
       return 0;
     }
 
-    if (!["issue", "pr"].includes(command)) {
+    if (!["issue", "pr", "release"].includes(command)) {
       throw new Error(`unknown command ${JSON.stringify(command)}`);
     }
 
@@ -24,25 +24,8 @@ export function runCli(argv = process.argv.slice(2), streams = {}) {
     const jsonInput = flags.fromJson ? readJsonFromStdin(streams) : null;
     const body = flags.bodyFile === undefined ? flags.body : readFileSync(flags.bodyFile, "utf8");
     const repo = flags.fromJson ? repoFromGitHubJson(jsonInput, flags) : requireCliString(flags.repo, "--repo");
-    const title = flags.fromJson ? requireCliString(jsonInput.title, "title") : requireCliString(flags.title, "--title");
-    const brief =
-      command === "issue"
-        ? buildIssueBrief({
-            repo,
-            number: flags.fromJson ? numberFromGitHubJson(jsonInput, flags, "issues") : flags.number,
-            title,
-            body: flags.fromJson ? jsonInput.body : body,
-            labels: flags.fromJson ? labelsFromGitHubJson(jsonInput.labels) : flags.label,
-          })
-        : buildPullRequestBrief({
-            repo,
-            number: flags.fromJson ? numberFromGitHubJson(jsonInput, flags, "pull") : flags.number,
-            title,
-            body: flags.fromJson ? jsonInput.body : body,
-            base: flags.fromJson ? requireCliString(jsonInput.baseRefName, "baseRefName") : requireCliString(flags.base, "--base"),
-            head: flags.fromJson ? requireCliString(jsonInput.headRefName, "headRefName") : requireCliString(flags.head, "--head"),
-            changedFiles: flags.fromJson ? changedFilesFromGitHubJson(jsonInput.files) : flags.changedFile,
-          });
+    const title = flags.fromJson || command === "release" ? jsonInput?.title : requireCliString(flags.title, "--title");
+    const brief = buildBrief(command, flags, jsonInput, body, repo, title);
 
     stdout.write(`${brief}\n`);
     return 0;
@@ -55,7 +38,7 @@ export function runCli(argv = process.argv.slice(2), streams = {}) {
 function parseFlags(args) {
   const flags = {};
   const booleanFlags = new Set(["fromJson"]);
-  const repeatedFlags = new Set(["changedFile", "label"]);
+  const repeatedFlags = new Set(["changedFile", "check", "label"]);
 
   for (let index = 0; index < args.length; index += 1) {
     const flag = args[index];
@@ -65,7 +48,7 @@ function parseFlags(args) {
     }
 
     const name = flag.slice(2).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-    if (!["repo", "number", "title", "body", "bodyFile", "label", "base", "head", "changedFile", "fromJson"].includes(name)) {
+    if (!["repo", "number", "title", "body", "bodyFile", "label", "base", "head", "changedFile", "fromJson", "version", "changes", "changesFile", "check"].includes(name)) {
       throw new Error(`unknown flag ${flag}`);
     }
 
@@ -88,6 +71,37 @@ function parseFlags(args) {
   }
 
   return flags;
+}
+
+function buildBrief(command, flags, jsonInput, body, repo, title) {
+  if (command === "issue") {
+    return buildIssueBrief({
+      repo,
+      number: flags.fromJson ? numberFromGitHubJson(jsonInput, flags, "issues") : flags.number,
+      title: flags.fromJson ? requireCliString(title, "title") : title,
+      body: flags.fromJson ? jsonInput.body : body,
+      labels: flags.fromJson ? labelsFromGitHubJson(jsonInput.labels) : flags.label,
+    });
+  }
+
+  if (command === "pr") {
+    return buildPullRequestBrief({
+      repo,
+      number: flags.fromJson ? numberFromGitHubJson(jsonInput, flags, "pull") : flags.number,
+      title: flags.fromJson ? requireCliString(title, "title") : title,
+      body: flags.fromJson ? jsonInput.body : body,
+      base: flags.fromJson ? requireCliString(jsonInput.baseRefName, "baseRefName") : requireCliString(flags.base, "--base"),
+      head: flags.fromJson ? requireCliString(jsonInput.headRefName, "headRefName") : requireCliString(flags.head, "--head"),
+      changedFiles: flags.fromJson ? changedFilesFromGitHubJson(jsonInput.files) : flags.changedFile,
+    });
+  }
+
+  return buildReleaseBrief({
+    repo,
+    version: requireCliString(flags.version, "--version"),
+    changes: flags.changesFile === undefined ? requireCliString(flags.changes, "--changes") : readFileSync(flags.changesFile, "utf8"),
+    checks: flags.check,
+  });
 }
 
 function requireCliString(value, flag) {
@@ -191,6 +205,7 @@ function usage() {
     "  gh issue view 123 --json url,title,body,labels | oss-triage-brief issue --from-json",
     "  oss-triage-brief pr --repo owner/name --title \"PR title\" --base main --head feature [--number 123] [--body text] [--changed-file path]",
     "  gh pr view 123 --json url,title,body,baseRefName,headRefName,files | oss-triage-brief pr --from-json",
+    "  oss-triage-brief release --repo owner/name --version 0.2.0 --changes \"Release notes\" [--check \"npm run check\"]",
     "",
   ].join("\n");
 }
