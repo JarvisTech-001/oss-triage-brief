@@ -1,10 +1,10 @@
 {
-  "name": "codex-oss",
+  "name": "oss-triage-brief",
   "version": "0.1.0",
-  "description": "Create focused Codex maintenance briefs for open source issue triage.",
+  "description": "Create focused maintainer briefs for open source issue and pull request triage.",
   "type": "module",
   "bin": {
-    "codex-oss": "./src/cli.js"
+    "oss-triage-brief": "./src/cli.js"
   },
   "scripts": {
     "check": "npm test && npm run lint",
@@ -12,10 +12,10 @@
     "lint": "node --check src/*.js test/*.test.js"
   },
   "keywords": [
-    "codex",
     "open-source",
     "maintainers",
     "issue-triage",
+    "pull-request-review",
     "cli"
   ],
   "author": "Frank",
@@ -24,15 +24,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JarvisTech-001/codex-oss.git"
+    "url": "git+https://github.com/JarvisTech-001/oss-triage-brief.git"
   },
   "bugs": {
-    "url": "https://github.com/JarvisTech-001/codex-oss/issues"
+    "url": "https://github.com/JarvisTech-001/oss-triage-brief/issues"
   },
-  "homepage": "https://github.com/JarvisTech-001/codex-oss#readme",
+  "homepage": "https://github.com/JarvisTech-001/oss-triage-brief#readme",
   "files": [
     "src",
     "README.md",
+    "README.zh-CN.md",
     "LICENSE"
   ],
   "license": "MIT"

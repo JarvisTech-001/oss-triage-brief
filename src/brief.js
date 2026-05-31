@@ -6,7 +6,7 @@ export function buildIssueBrief(input) {
   const labels = normalizeLabels(input.labels);
 
   return [
-    "# Codex OSS Maintenance Brief",
+    "# OSS Maintainer Brief",
     "",
     `Repository: ${repo}`,
     issueNumber === null ? "Issue: not provided" : `Issue: #${issueNumber}`,
@@ -28,6 +28,44 @@ export function buildIssueBrief(input) {
     "- Classification: bug, feature, question, docs, or maintenance.",
     "- Priority: P0, P1, P2, or P3 with rationale.",
     "- Next action: close, ask for info, accept, or create a focused implementation plan.",
+  ].join("\n");
+}
+
+export function buildPullRequestBrief(input) {
+  const repo = requireNonEmptyString(input.repo, "repo");
+  const title = requireNonEmptyString(input.title, "title");
+  const pullRequestNumber = normalizeIssueNumber(input.number);
+  const body = normalizeIssueBody(input.body);
+  const base = requireNonEmptyString(input.base, "base");
+  const head = requireNonEmptyString(input.head, "head");
+  const changedFiles = normalizeChangedFiles(input.changedFiles);
+
+  return [
+    "# OSS Maintainer Brief",
+    "",
+    `Repository: ${repo}`,
+    pullRequestNumber === null ? "Pull request: not provided" : `Pull request: #${pullRequestNumber}`,
+    `Title: ${title}`,
+    `Base branch: ${base}`,
+    `Head branch: ${head}`,
+    "Changed files:",
+    ...changedFiles.map((file) => `- ${file}`),
+    "",
+    "## Maintainer Task",
+    "Review this pull request for maintainer acceptance.",
+    "",
+    "## Pull Request Body",
+    body,
+    "",
+    "## Constraints",
+    "- Focus on correctness, regressions, test coverage, and maintenance risk.",
+    "- Prefer the smallest review comment that would unblock a safe merge.",
+    "- Call out missing tests or unclear behavior before proposing broader changes.",
+    "",
+    "## Expected Output",
+    "- Decision: approve, request changes, comment, or needs maintainer follow-up.",
+    "- Main risks: list the concrete risks that affect merge safety.",
+    "- Next action: smallest action needed before merge.",
   ].join("\n");
 }
 
@@ -70,4 +108,20 @@ function normalizeLabels(value) {
   }
 
   return value.map((label) => requireNonEmptyString(label, "label"));
+}
+
+function normalizeChangedFiles(value) {
+  if (value === undefined || value === null) {
+    return ["not provided"];
+  }
+
+  if (!Array.isArray(value)) {
+    throw new TypeError(`changedFiles must be an array; received ${JSON.stringify(value)}`);
+  }
+
+  if (value.length === 0) {
+    return ["not provided"];
+  }
+
+  return value.map((file) => requireNonEmptyString(file, "changedFile"));
 }

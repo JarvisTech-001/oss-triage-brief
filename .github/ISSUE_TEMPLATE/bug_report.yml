@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible problem in codex-oss.
+description: Report a reproducible problem in oss-triage-brief.
 title: "[Bug]: "
 labels:
   - bug

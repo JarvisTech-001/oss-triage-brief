@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve `codex-oss`.
+Thanks for helping improve `oss-triage-brief`.
 
 ## Development
 

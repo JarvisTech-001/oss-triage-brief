@@ -2,7 +2,7 @@
 
 import { readFileSync } from "node:fs";
 
-import { buildIssueBrief } from "./brief.js";
+import { buildIssueBrief, buildPullRequestBrief } from "./brief.js";
 
 export function runCli(argv = process.argv.slice(2), streams = {}) {
   const stdout = streams.stdout ?? process.stdout;
@@ -16,19 +16,32 @@ export function runCli(argv = process.argv.slice(2), streams = {}) {
       return 0;
     }
 
-    if (command !== "issue") {
+    if (!["issue", "pr"].includes(command)) {
       throw new Error(`unknown command ${JSON.stringify(command)}`);
     }
 
     const flags = parseFlags(args);
     const body = flags.bodyFile === undefined ? flags.body : readFileSync(flags.bodyFile, "utf8");
-    const brief = buildIssueBrief({
-      repo: requireCliString(flags.repo, "--repo"),
-      number: flags.number,
-      title: requireCliString(flags.title, "--title"),
-      body,
-      labels: flags.label,
-    });
+    const repo = requireCliString(flags.repo, "--repo");
+    const title = requireCliString(flags.title, "--title");
+    const brief =
+      command === "issue"
+        ? buildIssueBrief({
+            repo,
+            number: flags.number,
+            title,
+            body,
+            labels: flags.label,
+          })
+        : buildPullRequestBrief({
+            repo,
+            number: flags.number,
+            title,
+            body,
+            base: requireCliString(flags.base, "--base"),
+            head: requireCliString(flags.head, "--head"),
+            changedFiles: flags.changedFile,
+          });
 
     stdout.write(`${brief}\n`);
     return 0;
@@ -40,7 +53,7 @@ export function runCli(argv = process.argv.slice(2), streams = {}) {
 
 function parseFlags(args) {
   const flags = {};
-  const repeatedFlags = new Set(["label"]);
+  const repeatedFlags = new Set(["changedFile", "label"]);
 
   for (let index = 0; index < args.length; index += 2) {
     const flag = args[index];
@@ -55,7 +68,7 @@ function parseFlags(args) {
     }
 
     const name = flag.slice(2).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-    if (!["repo", "number", "title", "body", "bodyFile", "label"].includes(name)) {
+    if (!["repo", "number", "title", "body", "bodyFile", "label", "base", "head", "changedFile"].includes(name)) {
       throw new Error(`unknown flag ${flag}`);
     }
 
@@ -80,7 +93,8 @@ function requireCliString(value, flag) {
 function usage() {
   return [
     "Usage:",
-    "  codex-oss issue --repo owner/name --title \"Issue title\" [--number 123] [--body text] [--body-file path] [--label bug]",
+    "  oss-triage-brief issue --repo owner/name --title \"Issue title\" [--number 123] [--body text] [--body-file path] [--label bug]",
+    "  oss-triage-brief pr --repo owner/name --title \"PR title\" --base main --head feature [--number 123] [--body text] [--changed-file path]",
     "",
   ].join("\n");
 }

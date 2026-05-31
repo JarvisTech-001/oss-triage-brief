@@ -1,21 +1,21 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { buildIssueBrief } from "../src/brief.js";
+import { buildIssueBrief, buildPullRequestBrief } from "../src/brief.js";
 import { runCli } from "../src/cli.js";
 
 describe("buildIssueBrief", () => {
   it("creates a focused issue triage brief", () => {
     const brief = buildIssueBrief({
-      repo: "openai/codex",
+      repo: "example/project",
       number: 42,
       title: "Crash when reviewing a pull request",
       body: "Steps: open a PR, start review, see crash.",
       labels: ["bug", "needs-triage"],
     });
 
-    assert.match(brief, /^# Codex OSS Maintenance Brief/);
-    assert.match(brief, /Repository: openai\/codex/);
+    assert.match(brief, /^# OSS Maintainer Brief/);
+    assert.match(brief, /Repository: example\/project/);
     assert.match(brief, /Issue: #42/);
     assert.match(brief, /Labels: bug, needs-triage/);
     assert.match(brief, /Triage this issue and propose the smallest safe next step\./);
@@ -24,7 +24,7 @@ describe("buildIssueBrief", () => {
 
   it("uses an explicit placeholder when the issue body is blank", () => {
     const brief = buildIssueBrief({
-      repo: "openai/codex",
+      repo: "example/project",
       title: "Document review workflow",
       body: "   ",
     });
@@ -44,6 +44,27 @@ describe("buildIssueBrief", () => {
   });
 });
 
+describe("buildPullRequestBrief", () => {
+  it("creates a focused pull request review brief", () => {
+    const brief = buildPullRequestBrief({
+      repo: "example/project",
+      number: 18,
+      title: "Add release checklist",
+      body: "Adds a release checklist command.",
+      base: "main",
+      head: "release-checklist",
+      changedFiles: ["src/cli.js", "test/brief.test.js"],
+    });
+
+    assert.match(brief, /^# OSS Maintainer Brief/);
+    assert.match(brief, /Pull request: #18/);
+    assert.match(brief, /Base branch: main/);
+    assert.match(brief, /Head branch: release-checklist/);
+    assert.match(brief, /Changed files:\n- src\/cli\.js\n- test\/brief\.test\.js/);
+    assert.match(brief, /Review this pull request for maintainer acceptance\./);
+  });
+});
+
 describe("runCli", () => {
   it("prints an issue brief from command line flags", () => {
     const writes = [];
@@ -51,7 +72,7 @@ describe("runCli", () => {
       [
         "issue",
         "--repo",
-        "openai/codex",
+        "example/project",
         "--number",
         "7",
         "--title",
@@ -72,9 +93,40 @@ describe("runCli", () => {
     assert.match(writes.join(""), /Release notes are missing\./);
   });
 
+  it("prints a pull request brief from command line flags", () => {
+    const writes = [];
+    const code = runCli(
+      [
+        "pr",
+        "--repo",
+        "example/project",
+        "--number",
+        "12",
+        "--title",
+        "Add review command",
+        "--body",
+        "Adds a review command for maintainers.",
+        "--base",
+        "main",
+        "--head",
+        "review-command",
+        "--changed-file",
+        "src/cli.js",
+      ],
+      {
+        stdout: { write: (value) => writes.push(value) },
+        stderr: { write: () => {} },
+      }
+    );
+
+    assert.equal(code, 0);
+    assert.match(writes.join(""), /Pull request: #12/);
+    assert.match(writes.join(""), /Changed files:\n- src\/cli\.js/);
+  });
+
   it("returns a non-zero code when required flags are missing", () => {
     const errors = [];
-    const code = runCli(["issue", "--repo", "openai/codex"], {
+    const code = runCli(["issue", "--repo", "example/project"], {
       stdout: { write: () => {} },
       stderr: { write: (value) => errors.push(value) },
     });

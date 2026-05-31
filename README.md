@@ -1,30 +1,28 @@
-# codex-oss
+# oss-triage-brief
 
-`codex-oss` is a small maintainer CLI for turning open source issue reports into
-focused Codex maintenance briefs.
+`oss-triage-brief` is a small local CLI for open source maintainers. It turns
+issue reports and pull request summaries into focused Markdown briefs that can
+be pasted into an AI coding assistant or a maintainer review note.
 
-The project name is `codex-oss`. It is maintained by
-[@JarvisTech-001](https://github.com/JarvisTech-001) and is not affiliated with
-OpenAI.
+Chinese README: [README.zh-CN.md](README.zh-CN.md)
 
 ## Why
 
-Open source maintainers spend a lot of time turning incomplete issue reports into
-clear next actions. This tool creates a consistent brief that asks Codex to
-classify an issue, assign priority, call out missing information, and recommend
-the smallest safe next step.
+Maintainers often spend the first review pass turning loose reports into clear
+decisions: classify the issue, identify missing information, review merge risk,
+and choose the smallest next action. This project keeps that workflow local,
+repeatable, and easy to inspect.
 
-The goal is narrow on purpose: help maintainers move from an issue report to a
-clear triage decision without adding a service, database, or hosted dependency.
+The scope is intentionally narrow. There is no hosted service, account system,
+database, telemetry, or runtime dependency.
 
 ## What It Does
 
-- Builds a Markdown brief from an issue title, body, number, repository, and
-  labels.
-- Asks Codex for classification, priority, missing information, and the smallest
-  useful next action.
-- Keeps the maintainer in control of the final decision.
-- Runs locally with no runtime dependencies.
+- Builds issue triage briefs from repository, title, body, number, and labels.
+- Builds pull request review briefs from repository, title, body, branches, and
+  changed files.
+- Produces plain Markdown that maintainers can paste into their own review flow.
+- Fails fast when required command input is missing.
 
 ## Install
 
@@ -33,6 +31,8 @@ npm install
 ```
 
 ## Usage
+
+Generate an issue triage brief:
 
 ```sh
 node ./src/cli.js issue \
@@ -44,42 +44,42 @@ node ./src/cli.js issue \
   --label needs-triage
 ```
 
-The command prints a Markdown brief that can be pasted into Codex.
+Generate a pull request review brief:
+
+```sh
+node ./src/cli.js pr \
+  --repo owner/project \
+  --number 18 \
+  --title "Add release checklist" \
+  --body "Adds a release checklist command." \
+  --base main \
+  --head release-checklist \
+  --changed-file src/cli.js \
+  --changed-file test/brief.test.js
+```
 
 Example output:
 
 ```md
-# Codex OSS Maintenance Brief
+# OSS Maintainer Brief
 
 Repository: owner/project
-Issue: #42
-Title: Crash when reviewing a pull request
-Labels: bug, needs-triage
-
-## Maintainer Task
-Triage this issue and propose the smallest safe next step.
+Pull request: #18
+Title: Add release checklist
+Base branch: main
+Head branch: release-checklist
+Changed files:
+- src/cli.js
+- test/brief.test.js
 ```
 
 ## Maintainer Workflow
 
-1. Copy the issue title, body, labels, and number.
-2. Generate a brief with `codex-oss issue`.
-3. Ask Codex to triage the issue from that brief.
-4. Use the output to close, ask for more information, accept, or plan the
-   smallest implementation.
-
-## Project Scope
-
-This repository starts with issue triage because it is a frequent maintainer
-workflow and easy to verify. Future work should stay maintainer-focused:
-
-- pull request review briefs;
-- release checklist generation;
-- security review prompts for dependency and code changes;
-- GitHub issue export helpers.
-
-Features that require accounts, background services, or hidden state should be
-avoided unless they directly improve the maintainer workflow.
+1. Copy the issue or pull request metadata.
+2. Generate a brief with `oss-triage-brief issue` or `oss-triage-brief pr`.
+3. Paste the brief into your review workflow.
+4. Use the result to close, ask for more information, request changes, or plan
+   the smallest implementation.
 
 ## Development
 
