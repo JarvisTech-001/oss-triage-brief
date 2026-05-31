@@ -16,6 +16,19 @@ repeatable, and easy to inspect.
 The scope is intentionally narrow. There is no hosted service, account system,
 database, telemetry, or runtime dependency.
 
+## Why This Matters for OSS Maintainers
+
+Issue triage, pull request review, and release preparation are recurring
+maintenance tasks that often block project momentum before code changes even
+begin. A focused brief gives maintainers a repeatable way to capture the facts,
+name the merge risk, ask for missing information, and choose the smallest safe
+next step.
+
+That matters most for small and volunteer-led projects, where maintainer time is
+the scarce resource. `oss-triage-brief` keeps the workflow lightweight: the
+project stays local, the output is plain Markdown, and the maintainer remains in
+control of every final decision.
+
 ## What It Does
 
 - Builds issue triage briefs from repository, title, body, number, and labels.
