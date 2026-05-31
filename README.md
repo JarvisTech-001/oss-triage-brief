@@ -20,11 +20,11 @@ database, telemetry, or runtime dependency.
 
 ## Project Status
 
-- Current release: [v0.1.0](https://github.com/JarvisTech-001/oss-triage-brief/releases/tag/v0.1.0).
+- Current release: [v0.2.0](https://github.com/JarvisTech-001/oss-triage-brief/releases/tag/v0.2.0).
 - CI runs `npm run check` on pushes and pull requests.
-- The package is prepared for npm publishing, but has not been published yet.
-  The next step is npm account authentication and `npm publish --access public`.
-- Open roadmap issues track the next maintainer workflow improvements.
+- npm publishing is tracked in [issue #2](https://github.com/JarvisTech-001/oss-triage-brief/issues/2).
+- `v0.2.0` adds GitHub JSON input, PR diff context, release briefs, examples,
+  and a GitHub Action integration example.
 
 ## Why This Matters for OSS Maintainers
 
@@ -44,6 +44,10 @@ control of every final decision.
 - Builds issue triage briefs from repository, title, body, number, and labels.
 - Builds pull request review briefs from repository, title, body, branches, and
   changed files.
+- Reads GitHub issue and pull request JSON from `gh` via `--from-json`.
+- Summarizes PR diff size and changed files when `--diff` or `--diff-file` is
+  provided.
+- Builds release checklist briefs for maintainer publish decisions.
 - Produces plain Markdown that maintainers can paste into their own review flow.
 - Fails fast when required command input is missing.
 
